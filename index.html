@@ -177,20 +177,22 @@
       background: rgba(181, 95, 230, 0.15);
       border: 1px solid var(--border-color);
       color: var(--neon-purple);
-      font-size: 10px;
-      padding: 3px 7px;
-      border-radius: 4px;
+      font-size: 11px;
+      font-weight: 600;
+      padding: 5px 10px;
+      border-radius: 6px;
       cursor: pointer;
       font-family: inherit;
-      min-height: 24px;
+      min-height: 32px;
       display: inline-flex;
       align-items: center;
-      gap: 4px;
+      gap: 6px;
+      touch-action: manipulation;
     }
 
     .api-status-dot {
-      width: 6px;
-      height: 6px;
+      width: 8px;
+      height: 8px;
       border-radius: 50%;
       display: inline-block;
       background: #9ca3af;
@@ -198,7 +200,7 @@
 
     .api-status-dot.connected {
       background: var(--neon-lime);
-      box-shadow: 0 0 6px var(--neon-lime);
+      box-shadow: 0 0 8px var(--neon-lime);
     }
 
     .api-status-dot.disconnected {
@@ -255,10 +257,27 @@
       bottom: 0;
       background: rgba(13, 7, 20, 0.96);
       backdrop-filter: blur(8px);
+      -webkit-backdrop-filter: blur(8px);
       display: flex;
       align-items: center;
       justify-content: center;
       z-index: 9999;
+      padding: 16px;
+    }
+
+    .api-modal-overlay {
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background: rgba(13, 7, 20, 0.98);
+      backdrop-filter: blur(12px);
+      -webkit-backdrop-filter: blur(12px);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      z-index: 10005 !important;
       padding: 16px;
     }
 
@@ -268,7 +287,7 @@
       border-radius: 8px;
       padding: 24px;
       width: 100%;
-      max-width: 400px;
+      max-width: 420px;
       box-shadow: 0 12px 36px rgba(0, 0, 0, 0.7);
     }
 
@@ -297,12 +316,13 @@
       display: flex;
       align-items: center;
       justify-content: space-between;
-      background: rgba(13, 7, 20, 0.8);
+      background: rgba(13, 7, 20, 0.85);
       border: 1px solid var(--border-color);
-      border-radius: 6px;
+      border-radius: 8px;
       padding: 8px 12px;
       margin-bottom: 16px;
-      font-size: 11px;
+      font-size: 12px;
+      gap: 8px;
     }
 
     .connection-status-pill.unlinked {
@@ -310,14 +330,28 @@
     }
 
     .btn-link-api {
-      background: transparent;
+      background: rgba(181, 95, 230, 0.2);
       border: 1px solid var(--neon-purple);
-      color: var(--neon-purple);
-      padding: 3px 8px;
-      border-radius: 4px;
-      font-size: 10px;
-      font-weight: 600;
+      color: #ffffff;
+      padding: 8px 14px;
+      border-radius: 6px;
+      font-size: 12px;
+      font-weight: 700;
       cursor: pointer;
+      touch-action: manipulation;
+      -webkit-tap-highlight-color: rgba(181, 95, 230, 0.4);
+      min-height: 40px;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      white-space: nowrap;
+      box-shadow: 0 0 10px rgba(181, 95, 230, 0.25);
+    }
+
+    .btn-link-api:active {
+      transform: scale(0.96);
+      background: var(--neon-purple);
+      color: #0b0612;
     }
 
     .login-footer-hint {
@@ -1003,7 +1037,7 @@
       bottom: calc(14px + env(safe-area-inset-bottom, 0px));
       right: 14px;
       left: 14px;
-      z-index: 10000;
+      z-index: 10010;
       display: flex;
       flex-direction: column;
       align-items: flex-end;
@@ -1083,33 +1117,6 @@
     </div>
   </header>
 
-  <div id="api-modal-overlay" class="login-modal-overlay" style="display: none;">
-    <div class="login-card">
-      <div class="login-header">
-        <div class="login-logo-title" style="font-size: 18px;">SAMBUNGKAN GOOGLE SHEETS</div>
-        <div class="login-subtitle">APPS SCRIPT WEB APP URL</div>
-      </div>
-      <form id="api-config-form" onsubmit="event.preventDefault(); saveApiUrlConfig();">
-        <div class="form-group">
-          <label class="form-label" for="input-gas-url">Web App URL (/exec)</label>
-          <input type="url" id="input-gas-url" class="form-control mono" placeholder="https://script.google.com/macros/s/.../exec" required>
-        </div>
-        <div style="font-size: 11px; color: var(--text-muted); margin-bottom: 12px; line-height: 1.4;">
-          Pastikan Web App di-deploy dengan: <br>
-          • <strong>Execute as:</strong> Me (email Anda)<br>
-          • <strong>Who has access:</strong> Anyone
-        </div>
-        <div style="display: flex; gap: 8px; margin-top: 10px;">
-          <button type="button" class="btn btn-outline" id="btn-test-api-conn" style="flex: 1; font-size: 11px;" onclick="testApiConnection()">⚡ Uji Koneksi</button>
-          <button type="submit" class="btn btn-primary" style="flex: 1; font-size: 11px;">Simpan URL</button>
-        </div>
-        <div style="margin-top: 10px;">
-          <button type="button" class="btn btn-outline btn-block" style="font-size: 11px; min-height: 32px;" onclick="closeApiModal()">Tutup</button>
-        </div>
-      </form>
-    </div>
-  </div>
-
   <div id="login-overlay" class="login-modal-overlay">
     <div class="login-card">
       <div class="login-header">
@@ -1118,19 +1125,19 @@
       </div>
 
       <div class="connection-status-pill" id="login-api-status-box">
-        <span id="login-api-status-text" style="color: var(--text-muted);">Memeriksa API...</span>
-        <button type="button" class="btn-link-api" onclick="openApiModal()">⚙️ Atur URL</button>
+        <span id="login-api-status-text" style="color: var(--text-muted); font-weight: 600;">Memeriksa API...</span>
+        <button type="button" class="btn-link-api" id="btn-login-open-api">⚙️ Atur URL</button>
       </div>
       
       <form id="login-form" onsubmit="event.preventDefault(); handleLoginSubmit();">
         <div class="form-group">
           <label class="form-label" for="login-userid">User ID</label>
-          <input type="text" id="login-userid" class="form-control mono" placeholder="Masukkan ID pengguna..." required autocomplete="username" autocapitalize="none">
+          <input type="text" id="login-userid" class="form-control mono" placeholder="Masukkan ID pengguna..." required autocomplete="username" autocapitalize="none" autocorrect="off" spellcheck="false">
         </div>
         
         <div class="form-group">
           <label class="form-label" for="login-password">Password</label>
-          <input type="password" id="login-password" class="form-control mono" placeholder="Masukkan password..." required autocomplete="current-password">
+          <input type="password" id="login-password" class="form-control mono" placeholder="Masukkan password..." required autocomplete="current-password" autocapitalize="none" autocorrect="off" spellcheck="false">
         </div>
         
         <button type="submit" class="btn btn-primary btn-block" id="btn-login-submit" style="margin-top: 16px;">
@@ -1139,15 +1146,41 @@
       </form>
 
       <div class="login-footer-hint">
-        <span>Akun Pengujian Bawaan:</span>
+        <span>Akun Pengujian Bawaan (Bila belum ada di Sheets):</span>
         <code>Staff: staff1 / staff123</code>
         <code>Team Leader: leader1 / leader123</code>
       </div>
     </div>
   </div>
 
+  <div id="api-modal-overlay" class="api-modal-overlay" style="display: none;">
+    <div class="login-card" style="border-color: var(--neon-purple); box-shadow: 0 0 30px rgba(181, 95, 230, 0.3);">
+      <div class="login-header">
+        <div class="login-logo-title" style="font-size: 18px; color: #fff;">SAMBUNGKAN GOOGLE SHEETS</div>
+        <div class="login-subtitle">APPS SCRIPT WEB APP URL</div>
+      </div>
+      <form id="api-config-form" onsubmit="event.preventDefault(); saveApiUrlConfig();">
+        <div class="form-group">
+          <label class="form-label" for="input-gas-url">Web App URL (/exec)</label>
+          <input type="url" id="input-gas-url" class="form-control mono" placeholder="https://script.google.com/macros/s/.../exec" required autocapitalize="none" autocorrect="off" spellcheck="false">
+        </div>
+        <div style="font-size: 11px; color: var(--text-muted); margin-bottom: 12px; line-height: 1.4;">
+          Pastikan Web App di-deploy dengan: <br>
+          • <strong>Execute as:</strong> Me (email Anda)<br>
+          • <strong>Who has access:</strong> Anyone
+        </div>
+        <div style="display: flex; gap: 8px; margin-top: 10px;">
+          <button type="button" class="btn btn-outline" id="btn-test-api-conn" style="flex: 1; font-size: 11px;">⚡ Uji Koneksi</button>
+          <button type="submit" class="btn btn-primary" style="flex: 1; font-size: 11px;">Simpan URL</button>
+        </div>
+        <div style="margin-top: 10px;">
+          <button type="button" class="btn btn-outline btn-block" style="font-size: 11px; min-height: 36px;" id="btn-close-api-modal">Tutup</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
   <main class="main-wrapper" id="main-content" style="display: none;">
-    <!-- Dashboard Metrik (Team Leader only) -->
     <section class="metrics-grid" id="metrics-container">
       <div class="metric-card total">
         <div class="metric-label">
@@ -1186,10 +1219,8 @@
       </div>
     </section>
 
-    <!-- Layout Container: Scanner Input & Tabel Riwayat -->
     <div class="app-layout" id="app-layout-container">
       
-      <!-- Panel Input & Universal Camera Scanner -->
       <section class="panel-card">
         <div class="panel-header">
           <h2 class="panel-title">Pengecekan Baru</h2>
@@ -1299,7 +1330,7 @@
               </div>
             </div>
 
-            <!-- Tampilan Desktop: Tabel 8 Kolom Lengkap -->
+            <!-- Tampilan Desktop (> 768px) -->
             <div class="desktop-table-view">
               <div class="table-responsive">
                 <table class="data-table">
@@ -1324,7 +1355,7 @@
               </div>
             </div>
 
-            <!-- Tampilan Ponsel: Mobile Card Feed -->
+            <!-- Tampilan Mobile (<= 768px) -->
             <div class="mobile-cards-view" id="mobile-cards-container">
               <div class="table-empty">Memuat riwayat pemeriksaan...</div>
             </div>
@@ -1343,8 +1374,26 @@
   <div id="toast-container"></div>
 
   <script>
+    // =========================================================================================
+    // PUSAT KONEKSI GOOGLE APPS SCRIPT (AUTO-CONNECT UNTUK SEMUA DEVICE)
+    // Cukup tempelkan URL Web App deployment (/exec) Anda SATU KALI SAJA di bawah ini pada GitHub!
+    // Begitu disimpan di GitHub, seluruh device (HP Android, iPhone, Laptop, PC) otomatis langsung
+    // terhubung ke Google Sheets tanpa perlu mengatur atau menempel URL lagi di masing-masing perangkat.
+    // =========================================================================================
     var DEFAULT_GAS_URL = 'https://script.google.com/macros/s/AKfycbx_PASTE_YOUR_DEPLOYMENT_URL_HERE/exec';
-    var GAS_API_URL = localStorage.getItem('fauuuexp_gas_api_url') || DEFAULT_GAS_URL;
+
+    function isDefaultUrlConfigured() {
+      var u = (DEFAULT_GAS_URL || '').trim();
+      return (u && u.indexOf('PASTE_YOUR_') === -1 && u.indexOf('script.google.com') !== -1);
+    }
+
+    // Mengambil URL aktif: Prioritaskan URL Pusat agar sekali pasang langsung berlaku di semua HP/Laptop
+    function getEffectiveApiUrl() {
+      if (isDefaultUrlConfigured()) {
+        return DEFAULT_GAS_URL.trim();
+      }
+      return (localStorage.getItem('fauuuexp_gas_api_url') || DEFAULT_GAS_URL).trim();
+    }
 
     var appState = {
       currentUser: null,
@@ -1409,19 +1458,20 @@
     ];
 
     function isApiConfigured() {
-      return (GAS_API_URL && GAS_API_URL.indexOf('PASTE_YOUR_') === -1 && GAS_API_URL.indexOf('script.google.com') !== -1);
+      var url = getEffectiveApiUrl();
+      return (url && url.indexOf('PASTE_YOUR_') === -1 && url.indexOf('script.google.com') !== -1);
     }
 
     function callGasApi(action, data) {
       return new Promise(function(resolve, reject) {
         if (!isApiConfigured()) {
-          return reject(new Error('URL API Google Apps Script belum diisi! Silakan klik tombol ⚙️ Atur URL di atas.'));
+          return reject(new Error('URL API Google Apps Script belum diisi! Silakan klik tombol ⚙️ Atur URL atau pasang DEFAULT_GAS_URL di GitHub.'));
         }
 
-        var targetUrl = GAS_API_URL.trim();
+        var targetUrl = getEffectiveApiUrl();
 
         if (targetUrl.indexOf('/dev') !== -1) {
-          return reject(new Error('URL berakhir dengan /dev! Harap gunakan URL deployment Web App berakhiran /exec agar dapat diakses tanpa login akun Google.'));
+          return reject(new Error('URL berakhir dengan /dev! Harap gunakan URL Web App berakhiran /exec agar dapat diakses publik.'));
         }
 
         var payload = {
@@ -1429,7 +1479,6 @@
           data: data || {}
         };
 
-        // Menggunakan text/plain agar browser tidak mengirim request preflight OPTIONS
         fetch(targetUrl, {
           method: 'POST',
           headers: {
@@ -1484,13 +1533,18 @@
 
     function updateApiStatusDisplay() {
       var configured = isApiConfigured();
+      var isCentral = isDefaultUrlConfigured();
       var headerDot = document.getElementById('header-api-dot');
       var statusText = document.getElementById('login-api-status-text');
       var statusPill = document.getElementById('login-api-status-box');
 
       if (configured) {
         if (headerDot) headerDot.className = 'api-status-dot connected';
-        if (statusText) statusText.innerHTML = '<span style="color: var(--neon-lime);">● API Terhubung</span>';
+        if (statusText) {
+          statusText.innerHTML = isCentral 
+            ? '<span style="color: var(--neon-lime);">● API Terhubung (Auto-Sync Pusat)</span>' 
+            : '<span style="color: var(--neon-lime);">● API Terhubung</span>';
+        }
         if (statusPill) statusPill.classList.remove('unlinked');
       } else {
         if (headerDot) headerDot.className = 'api-status-dot disconnected';
@@ -1516,7 +1570,33 @@
 
     function setupEventListeners() {
       document.getElementById('btn-logout').addEventListener('click', handleLogout);
-      document.getElementById('btn-open-api-config').addEventListener('click', openApiModal);
+
+      // Event listener khusus touch dan click tombol Atur URL di layar login
+      var btnLoginOpenApi = document.getElementById('btn-login-open-api');
+      if (btnLoginOpenApi) {
+        btnLoginOpenApi.addEventListener('click', function(e) {
+          e.preventDefault();
+          openApiModal();
+        });
+      }
+
+      var btnOpenApiHeader = document.getElementById('btn-open-api-config');
+      if (btnOpenApiHeader) {
+        btnOpenApiHeader.addEventListener('click', function(e) {
+          e.preventDefault();
+          openApiModal();
+        });
+      }
+
+      var btnCloseApiModal = document.getElementById('btn-close-api-modal');
+      if (btnCloseApiModal) {
+        btnCloseApiModal.addEventListener('click', closeApiModal);
+      }
+
+      var btnTestApi = document.getElementById('btn-test-api-conn');
+      if (btnTestApi) {
+        btnTestApi.addEventListener('click', testApiConnection);
+      }
 
       document.getElementById('btn-search-product').addEventListener('click', function() {
         var barcode = document.getElementById('input-barcode').value.trim();
@@ -1583,19 +1663,36 @@
     }
 
     function openApiModal() {
-      document.getElementById('input-gas-url').value = isApiConfigured() ? GAS_API_URL : '';
-      document.getElementById('api-modal-overlay').style.display = 'flex';
+      var currentVal = getEffectiveApiUrl();
+      document.getElementById('input-gas-url').value = (currentVal.indexOf('PASTE_YOUR_') === -1) ? currentVal : '';
+      
+      var apiModal = document.getElementById('api-modal-overlay');
+      if (apiModal) {
+        apiModal.style.display = 'flex';
+      }
+
+      var loginOverlay = document.getElementById('login-overlay');
+      if (loginOverlay) {
+        loginOverlay.style.zIndex = '9998';
+      }
     }
 
     function closeApiModal() {
-      document.getElementById('api-modal-overlay').style.display = 'none';
+      var apiModal = document.getElementById('api-modal-overlay');
+      if (apiModal) {
+        apiModal.style.display = 'none';
+      }
+
+      var loginOverlay = document.getElementById('login-overlay');
+      if (loginOverlay) {
+        loginOverlay.style.zIndex = '9999';
+      }
       updateApiStatusDisplay();
     }
 
     function saveApiUrlConfig() {
       var url = document.getElementById('input-gas-url').value.trim();
       if (url) {
-        GAS_API_URL = url;
         localStorage.setItem('fauuuexp_gas_api_url', url);
         closeApiModal();
         showToast('URL Google Apps Script berhasil disimpan!', 'success');
@@ -1622,7 +1719,7 @@
           btn.disabled = false;
           btn.textContent = '⚡ Uji Koneksi';
           if (res && res.success) {
-            showToast('✅ Berhasil Terhubung! ' + (res.activeSheetUser ? 'MasterUser terdeteksi.' : 'Sheet siap.'), 'success');
+            showToast('✅ Berhasil Terhubung! Sheet siap.', 'success');
           } else {
             showToast('Respon server: ' + (res.message || 'Gagal'), 'warning');
           }
@@ -1670,7 +1767,6 @@
       btn.textContent = 'Memverifikasi...';
 
       if (!isApiConfigured()) {
-        // Fallback: jika belum disambungkan ke Google Sheets, coba data mock bawaan
         setTimeout(function() {
           btn.disabled = false;
           btn.textContent = 'Masuk ke Sistem';
@@ -1684,13 +1780,12 @@
             saveAndApplyUser(userObj);
             showToast('Login berhasil sebagai ' + userObj.role + ' (Mode Offline/Mock)', 'success');
           } else {
-            showToast('Google Sheet belum tersambung! Klik "⚙️ Atur URL" di atas untuk membaca akun dari MasterUser.', 'warning');
+            showToast('Google Sheet belum tersambung! Ketuk tombol "⚙️ Atur URL" di atas untuk menghubungkan ke MasterUser.', 'warning');
           }
         }, 300);
         return;
       }
 
-      // Verifikasi langsung ke sheet MasterUser via Webhook Apps Script
       callGasApi('verifyLogin', { userId: userIdInput, password: passwordInput })
         .then(function(res) {
           btn.disabled = false;
@@ -1811,7 +1906,7 @@
         fetchProductByBarcode(decodedText);
       }
 
-      // Prioritas 1: Gunakan constraint string murni "environment" yang didukung iOS Safari & Android
+      // Prioritas 1: Gunakan facingMode environment murni yang didukung iOS Safari & Android
       appState.html5QrCode.start(
         { facingMode: "environment" },
         config,
@@ -1821,7 +1916,7 @@
         handleCameraStarted();
         appState.cameraEngineBusy = false;
       }).catch(function(err1) {
-        // Prioritas 2: Fallback mendeteksi hardware kamera belakang jika constraint facingMode ditolak
+        // Prioritas 2: Fallback mendeteksi deviceId kamera belakang
         if (Html5Qrcode.getCameras) {
           Html5Qrcode.getCameras().then(function(cameras) {
             if (cameras && cameras.length > 0) {
@@ -1876,7 +1971,7 @@
       document.getElementById('scanner-container').style.display = 'none';
       document.getElementById('btn-toggle-camera').textContent = 'Aktifkan Kamera';
 
-      var msg = 'Izin kamera live tidak aktif. Gunakan tombol "Foto Barcode (Semua HP)" yang 100% bekerja di semua HP.';
+      var msg = 'Izin live video tidak aktif. Gunakan tombol "Foto Barcode (Semua HP)" yang 100% bekerja di semua HP.';
       if (err && (err.name === 'NotAllowedError' || err.name === 'PermissionDeniedError')) {
         msg = 'Izin kamera ditolak browser. Buka Pengaturan HP > Browser > Beri Izin Kamera, atau gunakan "Foto Barcode".';
       }
@@ -1910,7 +2005,6 @@
 
       showToast('Memproses foto barcode...', 'info');
 
-      // Kompres dan resize foto resolusi tinggi kamera HP ke batas ideal (max 1200px) agar ZXing cepat membacanya
       var reader = new FileReader();
       reader.onload = function(evt) {
         var img = new Image();
