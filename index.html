@@ -183,6 +183,26 @@
       cursor: pointer;
       font-family: inherit;
       min-height: 24px;
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+    }
+
+    .api-status-dot {
+      width: 6px;
+      height: 6px;
+      border-radius: 50%;
+      display: inline-block;
+      background: #9ca3af;
+    }
+
+    .api-status-dot.connected {
+      background: var(--neon-lime);
+      box-shadow: 0 0 6px var(--neon-lime);
+    }
+
+    .api-status-dot.disconnected {
+      background: var(--status-warning);
     }
 
     .live-status {
@@ -212,6 +232,21 @@
       100% { opacity: 1; transform: scale(1); }
     }
 
+    .inapp-browser-alert {
+      display: none;
+      background: #7c2d12;
+      border-bottom: 1px solid #ea580c;
+      color: #ffedd5;
+      padding: 8px 12px;
+      font-size: 11px;
+      text-align: center;
+      line-height: 1.4;
+    }
+
+    .inapp-browser-alert strong {
+      color: #fff;
+    }
+
     .login-modal-overlay {
       position: fixed;
       top: 0;
@@ -233,13 +268,13 @@
       border-radius: 8px;
       padding: 24px;
       width: 100%;
-      max-width: 380px;
+      max-width: 400px;
       box-shadow: 0 12px 36px rgba(0, 0, 0, 0.7);
     }
 
     .login-header {
       text-align: center;
-      margin-bottom: 20px;
+      margin-bottom: 16px;
     }
 
     .login-logo-title {
@@ -256,6 +291,33 @@
       color: var(--neon-purple);
       text-transform: uppercase;
       font-weight: 600;
+    }
+
+    .connection-status-pill {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      background: rgba(13, 7, 20, 0.8);
+      border: 1px solid var(--border-color);
+      border-radius: 6px;
+      padding: 8px 12px;
+      margin-bottom: 16px;
+      font-size: 11px;
+    }
+
+    .connection-status-pill.unlinked {
+      border-color: var(--status-warning);
+    }
+
+    .btn-link-api {
+      background: transparent;
+      border: 1px solid var(--neon-purple);
+      color: var(--neon-purple);
+      padding: 3px 8px;
+      border-radius: 4px;
+      font-size: 10px;
+      font-weight: 600;
+      cursor: pointer;
     }
 
     .login-footer-hint {
@@ -975,7 +1037,7 @@
 
     @media print {
       body { background: #fff !important; color: #000 !important; padding: 0; }
-      header, .metrics-grid, .panel-card:first-child, .table-toolbar, .pagination-bar, #toast-container, #login-overlay, .mobile-cards-view { display: none !important; }
+      header, .metrics-grid, .panel-card:first-child, .table-toolbar, .pagination-bar, #toast-container, #login-overlay, .mobile-cards-view, .inapp-browser-alert { display: none !important; }
       .desktop-table-view { display: block !important; }
       .app-layout { display: block !important; }
       .panel-card { border: none !important; box-shadow: none !important; background: transparent !important; }
@@ -989,6 +1051,10 @@
 </head>
 <body>
 
+  <div id="inapp-alert-bar" class="inapp-browser-alert">
+    ⚠️ <strong>Perhatian:</strong> Anda membuka halaman di browser chat (WhatsApp/Telegram). Sensor kamera mungkin dinonaktifkan. Ketuk menu titik tiga di kanan atas dan pilih <strong>"Buka di Browser / Chrome / Safari"</strong>.
+  </div>
+
   <header>
     <div class="header-container">
       <div class="logo-area">
@@ -996,7 +1062,10 @@
       </div>
       
       <div class="header-right-group">
-        <button type="button" class="btn-api-config" id="btn-open-api-config" title="Konfigurasi URL Google Apps Script">⚙️ API</button>
+        <button type="button" class="btn-api-config" id="btn-open-api-config" title="Konfigurasi URL Google Apps Script">
+          <span class="api-status-dot" id="header-api-dot"></span>
+          <span>⚙️ API</span>
+        </button>
 
         <div id="user-session-info" class="user-session-badge" style="display: none;">
           <div class="user-meta">
@@ -1017,17 +1086,25 @@
   <div id="api-modal-overlay" class="login-modal-overlay" style="display: none;">
     <div class="login-card">
       <div class="login-header">
-        <div class="login-logo-title" style="font-size: 18px;">KONFIGURASI API BACKEND</div>
-        <div class="login-subtitle">GOOGLE APPS SCRIPT WEB APP URL</div>
+        <div class="login-logo-title" style="font-size: 18px;">SAMBUNGKAN GOOGLE SHEETS</div>
+        <div class="login-subtitle">APPS SCRIPT WEB APP URL</div>
       </div>
       <form id="api-config-form" onsubmit="event.preventDefault(); saveApiUrlConfig();">
         <div class="form-group">
-          <label class="form-label" for="input-gas-url">Apps Script Web App URL</label>
+          <label class="form-label" for="input-gas-url">Web App URL (/exec)</label>
           <input type="url" id="input-gas-url" class="form-control mono" placeholder="https://script.google.com/macros/s/.../exec" required>
         </div>
-        <div style="display: flex; gap: 8px; margin-top: 14px;">
-          <button type="submit" class="btn btn-primary" style="flex: 1;">Simpan URL</button>
-          <button type="button" class="btn btn-outline" onclick="closeApiModal()">Tutup</button>
+        <div style="font-size: 11px; color: var(--text-muted); margin-bottom: 12px; line-height: 1.4;">
+          Pastikan Web App di-deploy dengan: <br>
+          • <strong>Execute as:</strong> Me (email Anda)<br>
+          • <strong>Who has access:</strong> Anyone
+        </div>
+        <div style="display: flex; gap: 8px; margin-top: 10px;">
+          <button type="button" class="btn btn-outline" id="btn-test-api-conn" style="flex: 1; font-size: 11px;" onclick="testApiConnection()">⚡ Uji Koneksi</button>
+          <button type="submit" class="btn btn-primary" style="flex: 1; font-size: 11px;">Simpan URL</button>
+        </div>
+        <div style="margin-top: 10px;">
+          <button type="button" class="btn btn-outline btn-block" style="font-size: 11px; min-height: 32px;" onclick="closeApiModal()">Tutup</button>
         </div>
       </form>
     </div>
@@ -1038,6 +1115,11 @@
       <div class="login-header">
         <div class="login-logo-title">FAUUUEXP</div>
         <div class="login-subtitle">RETAIL EXP CHECKER // AUTHENTICATION</div>
+      </div>
+
+      <div class="connection-status-pill" id="login-api-status-box">
+        <span id="login-api-status-text" style="color: var(--text-muted);">Memeriksa API...</span>
+        <button type="button" class="btn-link-api" onclick="openApiModal()">⚙️ Atur URL</button>
       </div>
       
       <form id="login-form" onsubmit="event.preventDefault(); handleLoginSubmit();">
@@ -1051,7 +1133,7 @@
           <input type="password" id="login-password" class="form-control mono" placeholder="Masukkan password..." required autocomplete="current-password">
         </div>
         
-        <button type="submit" class="btn btn-primary btn-block" id="btn-login-submit" style="margin-top: 20px;">
+        <button type="submit" class="btn btn-primary btn-block" id="btn-login-submit" style="margin-top: 16px;">
           Masuk ke Sistem
         </button>
       </form>
@@ -1184,7 +1266,6 @@
         </div>
       </section>
 
-      <!-- Panel Riwayat Pengecekan & Mobile Card Feed (Team Leader only) -->
       <div id="table-component-wrapper">
         <section class="panel-card">
           <div class="panel-header">
@@ -1327,19 +1408,29 @@
       }
     ];
 
+    function isApiConfigured() {
+      return (GAS_API_URL && GAS_API_URL.indexOf('PASTE_YOUR_') === -1 && GAS_API_URL.indexOf('script.google.com') !== -1);
+    }
+
     function callGasApi(action, data) {
       return new Promise(function(resolve, reject) {
-        if (!GAS_API_URL || GAS_API_URL.indexOf('PASTE_YOUR_') !== -1) {
-          return reject(new Error('URL API Google Apps Script belum dikonfigurasi. Klik tombol ⚙️ API di kanan atas.'));
+        if (!isApiConfigured()) {
+          return reject(new Error('URL API Google Apps Script belum diisi! Silakan klik tombol ⚙️ Atur URL di atas.'));
+        }
+
+        var targetUrl = GAS_API_URL.trim();
+
+        if (targetUrl.indexOf('/dev') !== -1) {
+          return reject(new Error('URL berakhir dengan /dev! Harap gunakan URL deployment Web App berakhiran /exec agar dapat diakses tanpa login akun Google.'));
         }
 
         var payload = {
           action: action,
-          data: data
+          data: data || {}
         };
 
-        // Mengirim request sebagai text/plain agar browser tidak mengirim preflight OPTIONS
-        fetch(GAS_API_URL, {
+        // Menggunakan text/plain agar browser tidak mengirim request preflight OPTIONS
+        fetch(targetUrl, {
           method: 'POST',
           headers: {
             'Content-Type': 'text/plain;charset=utf-8'
@@ -1347,10 +1438,19 @@
           body: JSON.stringify(payload)
         })
         .then(function(response) {
-          return response.json();
+          return response.text();
         })
-        .then(function(jsonResult) {
-          resolve(jsonResult);
+        .then(function(rawText) {
+          var trimmed = rawText.trim();
+          if (trimmed.startsWith('<!DOCTYPE') || trimmed.startsWith('<html') || trimmed.indexOf('accounts.google.com') !== -1) {
+            throw new Error('Google menolak akses publik! Pastikan Web App Apps Script di-deploy dengan pengaturan "Who has access: Anyone".');
+          }
+          try {
+            var jsonResult = JSON.parse(rawText);
+            resolve(jsonResult);
+          } catch (jsonErr) {
+            throw new Error('Format respon server tidak valid: ' + rawText.slice(0, 120));
+          }
         })
         .catch(function(err) {
           reject(err);
@@ -1360,14 +1460,42 @@
 
     document.addEventListener('DOMContentLoaded', function() {
       initClock();
+      detectInAppBrowser();
       setupEventListeners();
       checkStoredSession();
-      checkApiUrlState();
+      updateApiStatusDisplay();
     });
 
-    function checkApiUrlState() {
-      if (!GAS_API_URL || GAS_API_URL.indexOf('PASTE_YOUR_') !== -1) {
-        showToast('Kamera aktif via GitHub! Untuk sinkron ke Google Sheet, klik tombol ⚙️ API.', 'warning');
+    function detectInAppBrowser() {
+      var ua = navigator.userAgent || navigator.vendor || window.opera;
+      var isInApp = (ua.indexOf('FBAN') > -1) || 
+                    (ua.indexOf('FBAV') > -1) || 
+                    (ua.indexOf('Instagram') > -1) || 
+                    (ua.indexOf('Line') > -1) || 
+                    (ua.indexOf('WhatsApp') > -1) || 
+                    (ua.indexOf('Telegram') > -1) || 
+                    (ua.indexOf('MicroMessenger') > -1);
+      
+      var alertBar = document.getElementById('inapp-alert-bar');
+      if (isInApp && alertBar) {
+        alertBar.style.display = 'block';
+      }
+    }
+
+    function updateApiStatusDisplay() {
+      var configured = isApiConfigured();
+      var headerDot = document.getElementById('header-api-dot');
+      var statusText = document.getElementById('login-api-status-text');
+      var statusPill = document.getElementById('login-api-status-box');
+
+      if (configured) {
+        if (headerDot) headerDot.className = 'api-status-dot connected';
+        if (statusText) statusText.innerHTML = '<span style="color: var(--neon-lime);">● API Terhubung</span>';
+        if (statusPill) statusPill.classList.remove('unlinked');
+      } else {
+        if (headerDot) headerDot.className = 'api-status-dot disconnected';
+        if (statusText) statusText.innerHTML = '<span style="color: var(--status-warning);">⚠️ Google Sheet Belum Disambungkan</span>';
+        if (statusPill) statusPill.classList.add('unlinked');
       }
     }
 
@@ -1455,12 +1583,13 @@
     }
 
     function openApiModal() {
-      document.getElementById('input-gas-url').value = (GAS_API_URL.indexOf('PASTE_YOUR_') === -1) ? GAS_API_URL : '';
+      document.getElementById('input-gas-url').value = isApiConfigured() ? GAS_API_URL : '';
       document.getElementById('api-modal-overlay').style.display = 'flex';
     }
 
     function closeApiModal() {
       document.getElementById('api-modal-overlay').style.display = 'none';
+      updateApiStatusDisplay();
     }
 
     function saveApiUrlConfig() {
@@ -1469,8 +1598,41 @@
         GAS_API_URL = url;
         localStorage.setItem('fauuuexp_gas_api_url', url);
         closeApiModal();
-        showToast('URL API berhasil disimpan!', 'success');
+        showToast('URL Google Apps Script berhasil disimpan!', 'success');
+        updateApiStatusDisplay();
       }
+    }
+
+    function testApiConnection() {
+      var url = document.getElementById('input-gas-url').value.trim();
+      if (!url) {
+        showToast('Masukkan URL Web App terlebih dahulu.', 'warning');
+        return;
+      }
+      
+      var btn = document.getElementById('btn-test-api-conn');
+      btn.disabled = true;
+      btn.textContent = 'Menguji...';
+
+      var originalUrl = GAS_API_URL;
+      GAS_API_URL = url;
+
+      callGasApi('ping', {})
+        .then(function(res) {
+          btn.disabled = false;
+          btn.textContent = '⚡ Uji Koneksi';
+          if (res && res.success) {
+            showToast('✅ Berhasil Terhubung! ' + (res.activeSheetUser ? 'MasterUser terdeteksi.' : 'Sheet siap.'), 'success');
+          } else {
+            showToast('Respon server: ' + (res.message || 'Gagal'), 'warning');
+          }
+        })
+        .catch(function(err) {
+          btn.disabled = false;
+          btn.textContent = '⚡ Uji Koneksi';
+          GAS_API_URL = originalUrl;
+          showToast('Koneksi Gagal: ' + err.message, 'danger');
+        });
     }
 
     function checkStoredSession() {
@@ -1491,6 +1653,7 @@
       document.getElementById('login-overlay').style.display = 'flex';
       document.getElementById('main-content').style.display = 'none';
       document.getElementById('user-session-info').style.display = 'none';
+      updateApiStatusDisplay();
     }
 
     function handleLoginSubmit() {
@@ -1506,9 +1669,8 @@
       btn.disabled = true;
       btn.textContent = 'Memverifikasi...';
 
-      var isConfigured = (GAS_API_URL && GAS_API_URL.indexOf('PASTE_YOUR_') === -1);
-
-      if (!isConfigured) {
+      if (!isApiConfigured()) {
+        // Fallback: jika belum disambungkan ke Google Sheets, coba data mock bawaan
         setTimeout(function() {
           btn.disabled = false;
           btn.textContent = 'Masuk ke Sistem';
@@ -1522,27 +1684,28 @@
             saveAndApplyUser(userObj);
             showToast('Login berhasil sebagai ' + userObj.role + ' (Mode Offline/Mock)', 'success');
           } else {
-            showToast('ID atau Password salah! Periksa data pengujian.', 'danger');
+            showToast('Google Sheet belum tersambung! Klik "⚙️ Atur URL" di atas untuk membaca akun dari MasterUser.', 'warning');
           }
         }, 300);
         return;
       }
 
+      // Verifikasi langsung ke sheet MasterUser via Webhook Apps Script
       callGasApi('verifyLogin', { userId: userIdInput, password: passwordInput })
         .then(function(res) {
           btn.disabled = false;
           btn.textContent = 'Masuk ke Sistem';
           if (res && res.success) {
             saveAndApplyUser(res.user);
-            showToast('Selamat datang, ' + res.user.nama, 'success');
+            showToast('Selamat datang, ' + res.user.nama + ' (' + res.user.role + ')', 'success');
           } else {
-            showToast(res.message || 'Login gagal. Coba lagi.', 'danger');
+            showToast(res.message || 'User ID atau Password salah!', 'danger');
           }
         })
         .catch(function(err) {
           btn.disabled = false;
           btn.textContent = 'Masuk ke Sistem';
-          showToast('Koneksi server gagal: ' + err.message, 'danger');
+          showToast('Koneksi MasterUser Gagal: ' + err.message, 'danger');
         });
     }
 
@@ -1617,7 +1780,7 @@
 
       if (typeof Html5Qrcode === 'undefined') {
         appState.cameraEngineBusy = false;
-        showToast('Library scanner belum siap. Gunakan "Foto Barcode (Semua HP)".', 'warning');
+        showToast('Library scanner sedang dimuat. Gunakan tombol "Foto Barcode (Semua HP)".', 'warning');
         return;
       }
 
@@ -1626,14 +1789,15 @@
       }
 
       var screenWidth = Math.min(window.innerWidth || 360, 480);
-      var qrBoxSize = Math.max(Math.floor(screenWidth * 0.72), 200);
+      var qrBoxWidth = Math.max(Math.floor(screenWidth * 0.75), 220);
+      var qrBoxHeight = Math.max(Math.floor(qrBoxWidth * 0.65), 140);
 
       var config = {
-        fps: 15,
-        qrbox: { width: qrBoxSize, height: qrBoxSize },
+        fps: 12,
+        qrbox: { width: qrBoxWidth, height: qrBoxHeight },
         aspectRatio: 1.0,
         experimentalFeatures: {
-          useBarCodeDetectorIfSupported: true
+          useBarCodeDetectorIfSupported: false
         }
       };
 
@@ -1647,45 +1811,45 @@
         fetchProductByBarcode(decodedText);
       }
 
-      // Di GitHub Pages, akses environment camera berlangsung langsung dan tanpa restriksi iframe
+      // Prioritas 1: Gunakan constraint string murni "environment" yang didukung iOS Safari & Android
       appState.html5QrCode.start(
-        { facingMode: { ideal: "environment" } },
+        { facingMode: "environment" },
         config,
         onScanSuccess,
         function() {}
       ).then(function() {
         handleCameraStarted();
         appState.cameraEngineBusy = false;
-      }).catch(function() {
-        // Fallback: telusuri kamera hardware jika constraint ideal gagal
+      }).catch(function(err1) {
+        // Prioritas 2: Fallback mendeteksi hardware kamera belakang jika constraint facingMode ditolak
         if (Html5Qrcode.getCameras) {
           Html5Qrcode.getCameras().then(function(cameras) {
             if (cameras && cameras.length > 0) {
               var rearCam = null;
               for (var i = 0; i < cameras.length; i++) {
                 var lbl = (cameras[i].label || '').toLowerCase();
-                if (lbl.indexOf('back') !== -1 || lbl.indexOf('rear') !== -1 || lbl.indexOf('environment') !== -1 || lbl.indexOf('belakang') !== -1) {
+                if (lbl.indexOf('back') !== -1 || lbl.indexOf('rear') !== -1 || lbl.indexOf('belakang') !== -1 || lbl.indexOf('environment') !== -1) {
                   rearCam = cameras[i];
                   break;
                 }
               }
-              var camId = rearCam ? rearCam.id : cameras[cameras.length - 1].id;
-              appState.html5QrCode.start(camId, config, onScanSuccess, function() {})
+              var chosenId = rearCam ? rearCam.id : cameras[cameras.length - 1].id;
+              appState.html5QrCode.start(chosenId, config, onScanSuccess, function() {})
                 .then(function() {
                   handleCameraStarted();
                   appState.cameraEngineBusy = false;
                 })
-                .catch(function() {
-                  handleCameraFallbackFailure();
+                .catch(function(err2) {
+                  handleCameraFallbackFailure(err2);
                 });
             } else {
-              handleCameraFallbackFailure();
+              handleCameraFallbackFailure(err1);
             }
           }).catch(function() {
-            handleCameraFallbackFailure();
+            handleCameraFallbackFailure(err1);
           });
         } else {
-          handleCameraFallbackFailure();
+          handleCameraFallbackFailure(err1);
         }
       });
     }
@@ -1693,7 +1857,7 @@
     function handleCameraStarted() {
       appState.isCameraActive = true;
       document.getElementById('btn-toggle-camera').textContent = 'Tutup Kamera';
-      document.getElementById('scanner-status').textContent = 'Arahkan barcode ke dalam bingkai';
+      document.getElementById('scanner-status').textContent = 'Arahkan barcode produk ke dalam bingkai';
 
       var videoEl = document.querySelector('#reader video');
       if (videoEl) {
@@ -1705,14 +1869,18 @@
       }
     }
 
-    function handleCameraFallbackFailure() {
+    function handleCameraFallbackFailure(err) {
       appState.cameraEngineBusy = false;
       appState.isCameraActive = false;
-      document.getElementById('scanner-status').textContent = 'Live stream dibatasi oleh izin browser';
+      document.getElementById('scanner-status').textContent = 'Live stream tidak diizinkan oleh peramban';
       document.getElementById('scanner-container').style.display = 'none';
       document.getElementById('btn-toggle-camera').textContent = 'Aktifkan Kamera';
 
-      showToast('Izin stream kamera dibatasi. Silakan gunakan tombol "Foto Barcode (Semua HP)".', 'warning');
+      var msg = 'Izin kamera live tidak aktif. Gunakan tombol "Foto Barcode (Semua HP)" yang 100% bekerja di semua HP.';
+      if (err && (err.name === 'NotAllowedError' || err.name === 'PermissionDeniedError')) {
+        msg = 'Izin kamera ditolak browser. Buka Pengaturan HP > Browser > Beri Izin Kamera, atau gunakan "Foto Barcode".';
+      }
+      showToast(msg, 'warning');
     }
 
     function stopCameraScanner() {
@@ -1740,32 +1908,63 @@
       var file = e.target.files && e.target.files[0];
       if (!file) return;
 
-      showToast('Membaca barcode dari foto...', 'info');
+      showToast('Memproses foto barcode...', 'info');
 
-      if (!appState.html5QrCode) {
-        appState.html5QrCode = new Html5Qrcode('reader');
-      }
-
-      appState.html5QrCode.scanFile(file, true)
-        .then(function(decodedText) {
-          if (navigator.vibrate) {
-            try { navigator.vibrate(80); } catch (err) {}
+      // Kompres dan resize foto resolusi tinggi kamera HP ke batas ideal (max 1200px) agar ZXing cepat membacanya
+      var reader = new FileReader();
+      reader.onload = function(evt) {
+        var img = new Image();
+        img.onload = function() {
+          var maxDim = 1200;
+          var w = img.width;
+          var h = img.height;
+          
+          if (w > maxDim || h > maxDim) {
+            if (w > h) {
+              h = Math.round((h * maxDim) / w);
+              w = maxDim;
+            } else {
+              w = Math.round((w * maxDim) / h);
+              h = maxDim;
+            }
           }
-          showToast('Barcode berhasil terdeteksi: ' + decodedText, 'success');
-          document.getElementById('input-barcode').value = decodedText;
-          fetchProductByBarcode(decodedText);
-        })
-        .catch(function() {
-          showToast('Barcode pada foto tidak terbaca. Pastikan foto terang & barcode lurus.', 'danger');
-        });
+
+          var canvas = document.createElement('canvas');
+          canvas.width = w;
+          canvas.height = h;
+          var ctx = canvas.getContext('2d');
+          ctx.drawImage(img, 0, 0, w, h);
+
+          canvas.toBlob(function(scaledBlob) {
+            var scanTarget = scaledBlob ? new File([scaledBlob], "scan.jpg", { type: "image/jpeg" }) : file;
+            
+            if (!appState.html5QrCode) {
+              appState.html5QrCode = new Html5Qrcode('reader');
+            }
+
+            appState.html5QrCode.scanFile(scanTarget, true)
+              .then(function(decodedText) {
+                if (navigator.vibrate) {
+                  try { navigator.vibrate(80); } catch (err) {}
+                }
+                showToast('Barcode berhasil terdeteksi: ' + decodedText, 'success');
+                document.getElementById('input-barcode').value = decodedText;
+                fetchProductByBarcode(decodedText);
+              })
+              .catch(function() {
+                showToast('Barcode tidak terdeteksi. Pastikan foto terang, jelas, dan lurus.', 'danger');
+              });
+          }, 'image/jpeg', 0.85);
+        };
+        img.src = evt.target.result;
+      };
+      reader.readAsDataURL(file);
     }
 
     function fetchProductByBarcode(barcode) {
       showToast('Mencari barcode ' + barcode + '...', 'info');
 
-      var isConfigured = (GAS_API_URL && GAS_API_URL.indexOf('PASTE_YOUR_') === -1);
-
-      if (!isConfigured) {
+      if (!isApiConfigured()) {
         setTimeout(function() {
           if (mockProducts[barcode]) {
             displayProductInfo(mockProducts[barcode]);
@@ -1924,9 +2123,7 @@
       document.getElementById('product-info-display').classList.remove('active');
       document.getElementById('countdown-box').style.display = 'none';
 
-      var isConfigured = (GAS_API_URL && GAS_API_URL.indexOf('PASTE_YOUR_') === -1);
-
-      if (!isConfigured) {
+      if (!isApiConfigured()) {
         setTimeout(function() {
           optimisticRecord.idCek = 'CHK-20260914-000' + (appState.cachedRows.length);
           if (appState.currentUser && appState.currentUser.role === 'Team Leader') {
@@ -1995,9 +2192,7 @@
       if (tbody) tbody.innerHTML = '<tr><td colspan="8" class="table-empty">Mengambil data riwayat...</td></tr>';
       if (mContainer) mContainer.innerHTML = '<div class="table-empty">Mengambil data riwayat...</div>';
 
-      var isConfigured = (GAS_API_URL && GAS_API_URL.indexOf('PASTE_YOUR_') === -1);
-
-      if (!isConfigured) {
+      if (!isApiConfigured()) {
         setTimeout(function() {
           var filtered = mockHistory.filter(function(row) {
             if (appState.statusFilter !== 'Semua' && row.status !== appState.statusFilter) return false;
@@ -2227,8 +2422,7 @@
         showToast('Export CSV berhasil diunduh.', 'success');
       }
 
-      var isConfigured = (GAS_API_URL && GAS_API_URL.indexOf('PASTE_YOUR_') === -1);
-      if (!isConfigured) {
+      if (!isApiConfigured()) {
         processExport(appState.cachedRows);
         return;
       }
